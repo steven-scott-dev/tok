@@ -4,6 +4,7 @@ import requests
 import json
 import os
 
+
 # ------------------------------
 # Pushover setup
 # ------------------------------
@@ -31,9 +32,8 @@ def notify(msg):
 # ------------------------------
 # Load cookies
 # ------------------------------
-with open("cookies.json") as f:
-    cookies = json.load(f)
 
+cookies = json.loads(os.environ['COOKIES_JSON'])
 # ------------------------------
 # Load last count from file
 # ------------------------------
