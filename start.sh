@@ -1,2 +1,2 @@
 #!/bin/bash
-python watcher.py
+python3 watcher.py
