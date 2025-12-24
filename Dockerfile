@@ -1,10 +1,11 @@
-FROM mcr.microsoft.com/playwright:focal
+FROM mcr.microsoft.com/playwright/python:v1.43.0-jammy
 
 WORKDIR /app
-COPY . /app
 
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
-RUN playwright install chromium
+COPY requirements.txt .
 
-CMD ["python3", "watcher.py"]
+RUN python -m pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+CMD ["python", "watcher.py"]
