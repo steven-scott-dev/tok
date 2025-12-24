@@ -33,7 +33,11 @@ def notify(msg):
 # Load cookies
 # ------------------------------
 
-cookies = json.loads(os.environ['COOKIES_JSON'])
+cookies_data = os.environ.get("COOKIES_JSON")
+if not cookies_data:
+    raise Exception("COOKIES_JSON secret not set!")
+
+cookies = json.loads(cookies_data)
 # ------------------------------
 # Load last count from file
 # ------------------------------
