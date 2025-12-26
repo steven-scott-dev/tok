@@ -9,7 +9,8 @@ import os
 # Pushover setup
 # ------------------------------
 PUSHOVER_USER = os.getenv("PUSHOVER_USER")
-PUSHOVER_TOKEN = os.getenv("PUSHOVER_TOKEN")
+PUSHOVER_TOKEN = os.getenv("PUSHOVER_KEY")
+
 
 def notify(msg):
     try:
