@@ -119,5 +119,7 @@ def main():
                 print(f"Error during check: {e}")
                 time.sleep(60)
 
+                print("Loaded:", repr(PUSHOVER_USER), repr(PUSHOVER_TOKEN))
+
 if __name__ == "__main__":
     main()
