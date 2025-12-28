@@ -7,8 +7,8 @@ import os
 # ------------------------------
 # Pushover setup
 # ------------------------------
-PUSHOVER_USER = os.getenv("urbaeip9m5ohqs46yn9xpch2eeu115")
-PUSHOVER_TOKEN = os.getenv("az3toe7z7amrip3u7co3vu44j1v2ap")
+PUSHOVER_USER = "urbaeip9m5ohqs46yn9xpch2eeu115"
+PUSHOVER_TOKEN = "az3toe7z7amrip3u7co3vu44j1v2ap"
 
 def notify(msg):
     try:
