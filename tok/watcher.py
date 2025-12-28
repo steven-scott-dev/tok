@@ -7,12 +7,8 @@ import os
 # ------------------------------
 # Pushover setup
 # ------------------------------
-PUSHOVER_USER = "urbaeip9m5ohqs46yn9xpch2eeu115"  # Hardcoded
-PUSHOVER_TOKEN = "az3toe7z7amrip3u7co3vu44j1v2ap"  # Hardcoded
-
-print("PUSHOVER_USER:", repr(PUSHOVER_USER))
-print("PUSHOVER_TOKEN:", repr(PUSHOVER_TOKEN))
-
+PUSHOVER_USER = os.getenv("urbaeip9m5ohqs46yn9xpch2eeu115")
+PUSHOVER_TOKEN = os.getenv("az3toe7z7amrip3u7co3vu44j1v2ap")
 
 def notify(msg):
     try:
@@ -32,17 +28,15 @@ def notify(msg):
     except Exception as e:
         print(f"Error sending notification: {e}")
 
-
 # ------------------------------
 # Load cookies
 # ------------------------------
-cookies = [{"name": "_ga", "value": "GA1.1.18326116.1766543269", "domain": ".tokportal.com", "path": "/", "expires": 1801103268.67351, "httpOnly": False, "secure": False, "sameSite": "Lax"}, {"name": "_gcl_au", "value": "1.1.400754407.1766543269", "domain": ".tokportal.com", "path": "/", "expires": 1774319268, "httpOnly": False, "secure": False, "sameSite": "Lax"}, {"name": "test_cookie", "value": "CheckForPermission", "domain": ".doubleclick.net", "path": "/", "expires": 1766544169.048078, "httpOnly": False, "secure": True, "sameSite": "None"}, {"name": "_hjSessionUser_6409227", "value": "eyJpZCI6IjFiMmZmN2U0LTY0ZjMtNTA5NS1iZjU5LTQwMDk1ZjM4YmYzNSIsImNyZWF0ZWQiOjE3NjY1NDMyNjk2MDcsImV4aXN0aW5nIjpmYWxzZX0=", "domain": ".tokportal.com", "path": "/", "expires": 1798079269, "httpOnly": False, "secure": True, "sameSite": "None"}, {"name": "_hjSession_6409227", "value": "eyJpZCI6IjAyNTgzMTI3LTM1MzYtNDMwOS1hY2RlLWUzNTIxZWJhYjQ4MSIsImMiOjE3NjY1NDMyNjk2MTQsInMiOjAsInIiOjAsInNiIjowLCJzciI6MCwic2UiOjAsImZzIjoxLCJzcCI6MH0=", "domain": ".tokportal.com", "path": "/", "expires": 1766545069, "httpOnly": False, "secure": True, "sameSite": None}, {"name": "_ga_608TF8BPFN", "value": "", "domain": ".tokportal.com", "path": "/", "expires": 1801103275.929979, "httpOnly": False, "secure": False, "sameSite": "Lax"}]
+cookies = [{"name": "_ga", "value": "GA1.1.18326116.1766543269", "domain": ".tokportal.com", "path": "/", "expires": 1801103268.67351, "httpOnly": False, "secure": False, "sameSite": "Lax"}, {"name": "_gcl_au", "value": "1.1.400754407.1766543269", "domain": ".tokportal.com", "path": "/", "expires": 1774319268, "httpOnly": False, "secure": False, "sameSite": "Lax"}, {"name": "test_cookie", "value": "CheckForPermission", "domain": ".doubleclick.net", "path": "/", "expires": 1766544169.048078, "httpOnly": False, "secure": True, "sameSite": "None"}, {"name": "_hjSessionUser_6409227", "value": "eyJpZCI6IjFiMmZmN2U0LTY0ZjMtNTA5NS1iZjU5LTQwMDk1ZjM4YmYzNSIsImNyZWF0ZWQiOjE3NjY1NDMyNjk2MDcsImV4aXN0aW5nIjpmYWxzZX0=", "domain": ".tokportal.com", "path": "/", "expires": 1798079269, "httpOnly": False, "secure": True, "sameSite": "None"}, {"name": "_hjSession_6409227", "value": "eyJpZCI6IjAyNTgzMTI3LTM1MzYtNDMwOS1hY2RlLWUzNTIxZWJhYjQ4MSIsImMiOjE3NjY1NDMyNjk2MTQsInMiOjAsInIiOjAsInMiOjAsInNyIjowLCJzZSI6MCwiZnMiOjEsInNwIjowfQ==", "domain": ".tokportal.com", "path": "/", "expires": 1766545069, "httpOnly": False, "secure": True, "sameSite": "None"}, {"name": "_ga_608TF8BPFN", "value": "GS2.1.s1766543268$o1$g0$t1766543275$j53$l0$h0", "domain": ".tokportal.com", "path": "/", "expires": 1801103275.929979, "httpOnly": False, "secure": False, "sameSite": "Lax"}]
 
 # ------------------------------
 # Load last count from file
 # ------------------------------
 STATE_FILE = "last_count.json"
-
 def load_last_count():
     if os.path.exists(STATE_FILE):
         try:
@@ -56,10 +50,6 @@ def save_last_count(count):
     with open(STATE_FILE, "w") as f:
         json.dump({"last_count": count}, f)
 
-print("Loaded cookies type:", type(cookies))
-print("First cookie keys:", cookies[0].keys() if cookies else "NO COOKIES")
-
-
 # ------------------------------
 # Watcher
 # ------------------------------
@@ -72,24 +62,11 @@ def main():
         context = browser.new_context()
         context.add_cookies(cookies)
         page = context.new_page()
-        page.goto(
-            "https://app.tokportal.com/account-manager/dashboard",
-            wait_until="domcontentloaded",
-            timeout=15000
-        )
+        page.goto("https://app.tokportal.com/account-manager/dashboard", wait_until="networkidle")
 
         # Container selector
         container_selector = "div.bg-white.rounded-lg.p-8.text-center"
         container = page.locator(container_selector)
-        children = container.locator("> *").all()
-
-        current_count = len(children)
-        if current_count > last_count:
-            notify(f"🔥 NEW TokPortal mission(s)! Count: {current_count - last_count}")
-            last_count = current_count
-            save_last_count(last_count)
-        else:
-            print("No new missions yet")
 
         # Initial debug info
         children = container.locator("> *").all()
@@ -114,18 +91,8 @@ def main():
 
         while True:
             try:
-                # Attempt to reload the page safely
-                try:
-                    page.reload(timeout=15000)
-                except Exception:
-                    print("Page reload timed out, continuing...")
-
-                # Check if container exists and get children
-                if container.is_visible():
-                    children = container.locator("> *").all()
-                else:
-                    children = []
-
+                page.reload(wait_until="networkidle")
+                children = container.locator("> *").all()
                 current_count = len(children)
 
                 # Debug info
@@ -140,14 +107,11 @@ def main():
                     last_count = current_count
                     save_last_count(last_count)
 
-                time.sleep(30)
+                time.sleep(30)  # check every 30 seconds
 
             except Exception as e:
                 print(f"Error during check: {e}")
                 time.sleep(60)
-
-        print("Loaded:", repr(PUSHOVER_USER), repr(PUSHOVER_TOKEN))
-
 
 if __name__ == "__main__":
     main()
