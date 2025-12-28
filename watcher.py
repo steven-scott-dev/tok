@@ -1,3 +1,87 @@
+from playwright.sync_api import sync_playwright
+import time
+import requests
+import json
+import os
+
+# ------------------------------
+# Pushover setup
+# ------------------------------
+PUSHOVER_USER = os.getenv("PUSHOVER_USER")
+PUSHOVER_TOKEN = os.getenv("PUSHOVER_KEY")
+
+print("PUSHOVER_USER:", repr(PUSHOVER_USER))
+print("PUSHOVER_TOKEN:", repr(PUSHOVER_TOKEN))
+
+
+def notify(msg):
+    try:
+        r = requests.post(
+            "https://api.pushover.net/1/messages.json",
+            data={
+                "token": PUSHOVER_TOKEN,
+                "user": PUSHOVER_USER,
+                "message": msg,
+            },
+            timeout=5
+        )
+        if r.status_code == 200:
+            print(f"Notification sent: {msg}")
+        else:
+            print(f"Failed to send notification, status code: {r.status_code}")
+    except Exception as e:
+        print(f"Error sending notification: {e}")
+
+
+# ------------------------------
+# Load cookies
+# ------------------------------
+cookies_data = os.environ.get("COOKIES_JSON")
+if not cookies_data:
+    raise Exception("COOKIES_JSON secret not set!")
+
+cookies = json.loads(cookies_data)
+
+# ------------------------------
+# Load last count from file
+# ------------------------------
+STATE_FILE = "last_count.json"
+
+def load_last_count():
+    if os.path.exists(STATE_FILE):
+        try:
+            with open(STATE_FILE) as f:
+                return json.load(f).get("last_count", 0)
+        except:
+            return 0
+    return 0
+
+def save_last_count(count):
+    with open(STATE_FILE, "w") as f:
+        json.dump({"last_count": count}, f)
+
+print("Loaded cookies type:", type(cookies))
+print("First cookie keys:", cookies[0].keys() if cookies else "NO COOKIES")
+
+
+# ------------------------------
+# Watcher
+# ------------------------------
+def main():
+    last_count = load_last_count()
+    print(f"Loaded last count: {last_count}")
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        context = browser.new_context()
+        context.add_cookies(cookies)
+        page = context.new_page()
+        page.goto(
+            "https://app.tokportal.com/account-manager/dashboard",
+            wait_until="domcontentloaded",
+            timeout=15000
+        )
+
         # Container selector
         container_selector = "div.bg-white.rounded-lg.p-8.text-center"
         container = page.locator(container_selector)
@@ -37,7 +121,7 @@
                 # Attempt to reload the page safely
                 try:
                     page.reload(timeout=15000)
-                except playwright._impl._errors.TimeoutError:
+                except Exception:
                     print("Page reload timed out, continuing...")
 
                 # Check if container exists and get children
@@ -60,12 +144,14 @@
                     last_count = current_count
                     save_last_count(last_count)
 
-                # Check again in 30 seconds
                 time.sleep(30)
 
             except Exception as e:
                 print(f"Error during check: {e}")
                 time.sleep(60)
 
-        # Debug info for push notifications credentials (optional)
         print("Loaded:", repr(PUSHOVER_USER), repr(PUSHOVER_TOKEN))
+
+
+if __name__ == "__main__":
+    main()
